@@ -49,35 +49,23 @@ def cosine_similarity():
     
 from moviepy.editor import VideoFileClip
 
-app = Flask(__name__)
+@app.route('/video_length', methods=['POST'])
+def video_length():
+    video_url = request.get.json()['url']
+    response = response.get(video_url, stream=True)
 
-def get_video_duration(url):
-    # Send a request to download the video
-    response = requests.get(url, stream=True)
+    if response.status_code != 200:
+        return jsonify(('error':'Failed to download file')),400
 
-    # Save the video file temporarily
-    with open("temp.mp4", 'wb') as f:
+    filename = secure_filename(video_url.split('/')[-1])
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    with open(file_path, 'wb') as f:
         f.write(response.content)
 
-    # Load the video file
-    clip = VideoFileClip("temp.mp4")
+    video = VideoFileClip(file_path)
 
-    # Return the duration (in seconds)
-    return clip.duration
+    duration = video.duration #Duration in seconds
 
-@app.route('/get_video_length', methods=['POST'])
-def get_video_length():
-    data = request.get_json()
-    video_url = data['url']
-
-    # Check if url is not null
-    if not video_url:
-        return jsonify({"error": "Missing video URL"}), 400
-
-    try:
-        # Get video length
-        length = get_video_duration(video_url)
-        return jsonify({"length": length})
-    except Exception as e:
-        return jsonify({"error": "Unable to retrieve video length"}), 500
+    return jsonify({'video_length': duration})
 
