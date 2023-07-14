@@ -46,4 +46,38 @@ def cosine_similarity():
     most_similar_index = max(range(len(vectors)), key=lambda index: 1 - distance.cosine(query_vector, vectors[index]))
 
     return jsonify({'most_similar_text': texts[most_similar_index]})
+    
+from moviepy.editor import VideoFileClip
+
+app = Flask(__name__)
+
+def get_video_duration(url):
+    # Send a request to download the video
+    response = requests.get(url, stream=True)
+
+    # Save the video file temporarily
+    with open("temp.mp4", 'wb') as f:
+        f.write(response.content)
+
+    # Load the video file
+    clip = VideoFileClip("temp.mp4")
+
+    # Return the duration (in seconds)
+    return clip.duration
+
+@app.route('/get_video_length', methods=['POST'])
+def get_video_length():
+    data = request.get_json()
+    video_url = data['url']
+
+    # Check if url is not null
+    if not video_url:
+        return jsonify({"error": "Missing video URL"}), 400
+
+    try:
+        # Get video length
+        length = get_video_duration(video_url)
+        return jsonify({"length": length})
+    except Exception as e:
+        return jsonify({"error": "Unable to retrieve video length"}), 500
 
