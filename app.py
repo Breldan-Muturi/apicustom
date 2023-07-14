@@ -55,7 +55,7 @@ def video_length():
     response = response.get(video_url, stream=True)
 
     if response.status_code != 200:
-        return jsonify(('error':'Failed to download file')),400
+        return jsonify({'error':'Failed to download file'}),400
 
     filename = secure_filename(video_url.split('/')[-1])
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
